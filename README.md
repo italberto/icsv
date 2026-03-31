@@ -12,7 +12,7 @@ Biblioteca Python leve, de arquivo único, para leitura, manipulação e anális
 - **Arquivo único** — apenas copie `icsv.py` para o seu projeto
 - **Sem dependências externas** — usa somente a biblioteca padrão do Python
 - **Detecção automática** de delimitador, cabeçalho e quebra de linha
-- **Acesso por nome de coluna** — `linha.nome`, `linha.cpf`, `linha.status`
+- **Acesso por nome de coluna** — `linha.nome`, `linha.cpf` ou `linha["nome"]`, `linha["cpf"]`
 - **Filtros estilo SQL LIKE** — `%texto%`, `texto%`, `%texto`
 - **JOIN** entre arquivos (inner e left)
 - **Operações não destrutivas** — `filtrar`, `head`, `tail`, `selecionar_colunas`, `deduplicar` retornam novo ICSV
@@ -110,6 +110,26 @@ ICSV('arquivo.csv', tratamento_linhas_irregulares='preencher')
 | `dados.len_stream_estimate(..., retornar_intervalo=True, confianca=0.95)` | Estimativa + intervalo com nível de confiança (0.80–0.99) |
 | `dados.preview()` | Cabeçalho + primeiras 5 linhas |
 | `dados.cabecalho.campos` | Lista de nomes das colunas |
+
+---
+
+### Acesso a campos de uma linha
+
+Dentro de um laço `for linha in dados`, os campos de cada `Linha` podem ser acessados de três formas:
+
+| Forma | Exemplo | Notas |
+|---|---|---|
+| Atributo | `linha.nome` | Conveniente; requer nome válido como identificador Python |
+| Subscript por nome | `linha["nome"]` | Funciona com qualquer nome, incluindo hífens e espaços; insensível a maiúsculas |
+| Subscript por índice | `linha[0]` | Acesso posicional; lança `IndexError` se fora do intervalo |
+
+```python
+for linha in dados:
+    print(linha.nome)         # atributo
+    print(linha["nome"])      # subscript por nome (equivalente)
+    print(linha["Nome"])      # case-insensitive
+    print(linha[0])           # primeiro campo
+```
 
 ---
 
@@ -300,6 +320,12 @@ python examples/01_leitura_basica.py
 pip install pytest
 pytest test_icsv.py -v
 ```
+
+---
+
+## Changelog
+
+Consulte o arquivo [CHANGELOG.md](CHANGELOG.md) para o histórico completo de mudanças.
 
 ---
 

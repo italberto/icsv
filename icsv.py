@@ -337,6 +337,31 @@ class Linha:
             return self.obter_campo(self.__mapa_colunas[nome_atributo])
         raise AttributeError(f"A linha não possui a coluna ou atributo '{nome_atributo}'")
 
+    def __getitem__(self, chave: int | str) -> str:
+        """Permite acesso aos campos por índice inteiro ou nome de coluna.
+
+        Args:
+            chave: Índice inteiro (posicional) ou string com o nome da coluna.
+
+        Returns:
+            Valor do campo correspondente.
+
+        Raises:
+            IndexError: Se `chave` for inteiro e estiver fora do intervalo válido.
+            KeyError: Se `chave` for string e não corresponder a nenhuma coluna.
+
+        Exemplo:
+            linha[0]        # primeiro campo
+            linha["nome"]   # campo da coluna 'nome'
+            linha["Nome"]   # insensível a maiúsculas
+        """
+        if isinstance(chave, int):
+            return self.obter_campo(chave)
+        chave_normalizada = str(chave).strip().lower()
+        if chave_normalizada in self.__mapa_colunas:
+            return self.obter_campo(self.__mapa_colunas[chave_normalizada])
+        raise KeyError(f"A linha não possui a coluna '{chave}'")
+
     def __eq__(self, other: object) -> bool:
         """Compara duas linhas por valor, delimitador e quebra de linha."""
         if isinstance(other, Linha):
@@ -639,7 +664,10 @@ class BaseICSV():
 
         encoding_normalizado = encoding_preferido.lower().replace("_", "-")
         if encoding_normalizado == "utf-8":
-            candidatos.extend(["utf-8-sig", "cp1252", "iso-8859-1"])
+            # utf-8-sig deve vir antes de utf-8: ambos decodificam arquivos sem BOM
+            # corretamente, mas apenas utf-8-sig remove o BOM quando presente.
+            # Tentar utf-8 primeiro faz o BOM vazar como \ufeff no conteúdo.
+            candidatos = ["utf-8-sig", "utf-8", "cp1252", "iso-8859-1"]
         elif encoding_normalizado == "utf-8-sig":
             candidatos.extend(["utf-8", "cp1252", "iso-8859-1"])
         elif encoding_normalizado == "cp1252":
@@ -765,6 +793,7 @@ class BaseICSV():
     def __iterar_linhas_parseadas(self, reader_local: csv.reader) -> Iterator[Linha]:
         """Converte um csv.reader em objetos Linha aplicando validações de parse."""
         colunas_esperadas: int | None = None
+        mapa = self.__gerar_mapa_colunas()
         if self.__cabecalho:
             colunas_esperadas = len(self.__cabecalho.campos)
 
@@ -777,6 +806,7 @@ class BaseICSV():
                         quebra_linha=self.__quebra_linha,
                     )
                     colunas_esperadas = len(self.__cabecalho.campos)
+                    mapa = self.__gerar_mapa_colunas()
                 continue
 
             if colunas_esperadas is None:
@@ -788,7 +818,7 @@ class BaseICSV():
                 campos=linha,
                 delimitador=self.__delimitador,
                 quebra_linha=self.__quebra_linha,
-                mapa_colunas=self.__gerar_mapa_colunas(),
+                mapa_colunas=mapa,
             )
 
     def __iterar_linhas_stream(self) -> Iterator[Linha]:
