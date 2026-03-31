@@ -1,5 +1,10 @@
 # icsv
 
+[![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![GitHub last commit](https://img.shields.io/github/last-commit/italberto/icsv)](https://github.com/italberto/icsv/commits/main)
+[![GitHub repo size](https://img.shields.io/github/repo-size/italberto/icsv)](https://github.com/italberto/icsv)
+
 Biblioteca Python leve, de arquivo único, para leitura, manipulação e análise de arquivos CSV.
 
 ## Características
