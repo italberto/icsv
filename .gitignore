@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Ambientes virtuais
+.venv/
+venv/
+env/
+ENV/
+
+# Testes e cobertura
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# Arquivos de saída gerados pelos exemplos
+examples/*.csv
+!examples/colaboradores.csv
+!examples/departamentos.csv
+
+# Arquivos de desenvolvimento (não fazem parte da biblioteca publicada)
+icsv_old.py
+ex01_icsv.py
+ex02_info.py
+ex03_info_json.py
+ex04_to_json.py
+dados.csv

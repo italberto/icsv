@@ -1,0 +1,16 @@
+nome;email;cidade;departamento;cargo;salario;status
+Ana Lima;ana.lima@empresa.com;São Paulo;TI;Analista;5200;ativo
+Bruno Costa;bruno.costa@empresa.com;Rio de Janeiro;RH;Gerente;8500;ativo
+Carla Souza;carla.souza@empresa.com;Belo Horizonte;TI;Desenvolvedora;6300;ativo
+Diego Mendes;diego.mendes@empresa.com;São Paulo;Financeiro;Analista;5000;inativo
+Elena Ferreira;elena.ferreira@empresa.com;Curitiba;TI;Analista;5100;ativo
+Fábio Rocha;fabio.rocha@empresa.com;Porto Alegre;RH;Assistente;3200;ativo
+Gisele Tavares;gisele.tavares@empresa.com;São Paulo;TI;Gerente;9200;ativo
+Henrique Nunes;henrique.nunes@empresa.com;Rio de Janeiro;Financeiro;Analista;5300;inativo
+Isabela Ramos;isabela.ramos@empresa.com;Belo Horizonte;RH;Gerente;8100;ativo
+João Pedro;joao.pedro@empresa.com;São Paulo;TI;Desenvolvedor;6500;ativo
+Karen Dias;karen.dias@empresa.com;Curitiba;Financeiro;Assistente;3100;ativo
+Lucas Alves;lucas.alves@empresa.com;Rio de Janeiro;TI;Analista;5200;ativo
+Mariana Brito;mariana.brito@empresa.com;São Paulo;RH;Analista;4800;ativo
+Natan Freitas;natan.freitas@empresa.com;Belo Horizonte;TI;Desenvolvedor;6700;ativo
+Olga Martins;olga.martins@empresa.com;Porto Alegre;Financeiro;Gerente;8900;ativo
