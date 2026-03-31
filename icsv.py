@@ -888,7 +888,12 @@ class BaseICSV():
     # --- Interface pública ---
 
     def __iter__(self) -> Iterator[Linha]:
-        """Itera sobre as linhas de dados (excluindo o cabeçalho)."""
+        """Itera sobre as linhas de dados (excluindo o cabeçalho).
+
+        Em `modo_leitura='stream'`, cada nova iteração reabre a fonte
+        e recomeça do início. Ou seja: o objeto `ICSV` pode ser iterado
+        múltiplas vezes, embora cada iteração faça uma nova varredura.
+        """
         if self.__modo_leitura == "stream":
             yield from self.__iterar_linhas_stream()
             return
@@ -897,7 +902,11 @@ class BaseICSV():
             yield linha
 
     def __len__(self) -> int:
-        """Retorna o número de linhas de dados (excluindo o cabeçalho)."""
+        """Retorna o número de linhas de dados (excluindo o cabeçalho).
+
+        Em `modo_leitura='stream'`, esta operação faz uma varredura completa
+        da fonte a cada chamada. O valor é exato, mas custoso em arquivos grandes.
+        """
         if self.__modo_leitura == "stream":
             return sum(1 for _ in self.__iterar_linhas_stream())
         return len(self.__linhas)
@@ -1273,11 +1282,18 @@ class ICSV(BaseICSV):
         Raises:
             TypeError: Se `indice` não for int nem slice.
             IndexError: Se o índice inteiro estiver fora do intervalo.
+            RuntimeError: Em `modo_leitura='stream'`, quando o acesso exige
+                indexação aleatória em memória.
 
         Exemplo:
             dados[0]      # primeira linha
             dados[-1]     # última linha
             dados[0:10]   # novo ICSV com as 10 primeiras linhas
+
+        Observação:
+            Em `modo_leitura='stream'`, acesso por índice inteiro não é suportado,
+            pois exigiria materialização completa ou índice auxiliar. Para prefixos,
+            prefira `dados[:n]` ou `head(n)`. Para últimas linhas, use `tail(n)`.
         """
         if isinstance(indice, int):
             if self.modo_leitura == "stream":
@@ -1546,6 +1562,11 @@ class ICSV(BaseICSV):
 
         Returns:
             Novo `ICSV` com até `n` linhas.
+
+        Observação:
+            Em `modo_leitura='stream'`, o método precisa percorrer toda a fonte
+            para descobrir as últimas linhas. O custo em tempo é O(total de linhas),
+            mas a memória permanece O(n) graças ao uso de `deque(maxlen=n)`.
         """
         if self.modo_leitura == "stream":
             if n >= 0:

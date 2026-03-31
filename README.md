@@ -83,6 +83,19 @@ ICSV('arquivo.csv', modo_leitura='eager')
 ICSV('arquivo.csv', modo_leitura='stream')
 ```
 
+### Semântica do modo stream
+
+- O objeto `ICSV` em `modo_leitura='stream'` pode ser iterado mais de uma vez.
+  Cada novo `for linha in dados` reabre a fonte e recomeça do início.
+- Já os iteradores retornados por `iter(dados)`, `iter_filtrar_por_coluna()` e
+  `iter_filtrar_por_regex()` são de consumo único, como qualquer iterador Python.
+- Em `stream`, `len(dados)` funciona, mas faz uma varredura completa a cada chamada.
+- Em `stream`, acesso aleatório não existe: `dados[0]`, `dados[-1]` e fatias
+  arbitrárias exigiriam materialização ou indexação prévia.
+- Para primeiras linhas, use `head(n)` ou `dados[:n]`.
+- Para últimas linhas, use `tail(n)`; em `stream`, isso exige ler o arquivo inteiro,
+  mantendo apenas as últimas `n` linhas em memória.
+
 Para CSVs corrompidos com linhas de tamanho diferente do cabeçalho, use `tratamento_linhas_irregulares`:
 
 ```python
@@ -101,15 +114,19 @@ ICSV('arquivo.csv', tratamento_linhas_irregulares='preencher')
 
 | Operação | Descrição |
 |---|---|
-| `len(dados)` | Número de linhas |
-| `dados[0]` | Linha por índice (`Linha`) |
-| `dados[0:5]` | Slice — retorna novo `ICSV` |
+| `len(dados)` | Número de linhas; em `stream`, faz varredura completa |
+| `dados[0]` | Linha por índice (`Linha`); indisponível em `stream` |
+| `dados[:5]` | Prefixo — retorna novo `ICSV`; forma recomendada em `stream` |
 | `dados.info()` | Informações em texto |
 | `dados.info_json()` | Informações em JSON |
 | `dados.len_stream_estimate(amostra_linhas=1000)` | Estimativa rápida de linhas (sem varredura completa em stream) |
 | `dados.len_stream_estimate(..., retornar_intervalo=True, confianca=0.95)` | Estimativa + intervalo com nível de confiança (0.80–0.99) |
 | `dados.preview()` | Cabeçalho + primeiras 5 linhas |
 | `dados.cabecalho.campos` | Lista de nomes das colunas |
+
+No `modo_leitura='stream'`, `dados[-1]` não é permitido porque acesso aleatório ao
+fim do arquivo exigiria materializar tudo ou manter um índice completo em memória.
+Use `tail(1)` quando quiser a última linha.
 
 ---
 
@@ -143,7 +160,7 @@ for linha in dados:
 | `iter_filtrar_por_regex(col, regex)` | Filtragem regex lazy — retorna iterador de `Linha` |
 | `order_by_field_name(col, reverse, cast_type)` | Ordenação in-place |
 | `head(n=5)` | Primeiras n linhas → novo `ICSV` |
-| `tail(n=5)` | Últimas n linhas → novo `ICSV` |
+| `tail(n=5)` | Últimas n linhas → novo `ICSV`; em `stream`, faz varredura completa |
 
 No `modo_leitura='stream'`, os métodos `filtrar_por_*` ainda retornam um novo objeto materializado em memória.
 Para processamento realmente incremental, prefira `iter_filtrar_por_*` ou `salvar_filtrado_por_*`.
@@ -284,6 +301,40 @@ Ocorre em todos os navegadores"
   dados = ICSV("arquivo.csv", modo_leitura="stream")
   total = len(dados)  # Varredura completa, mas valor exato
   ```
+
+### Stream — Iteração vs. acesso aleatório
+
+O `ICSV` em `stream` **não vira um objeto esgotado** depois de um `for linha in dados`.
+Uma nova iteração sobre `dados` reabre a fonte e começa novamente do início.
+
+```python
+dados = ICSV("arquivo.csv", modo_leitura="stream")
+
+for linha in dados:
+    ...
+
+# funciona: nova varredura desde o início
+total = len(dados)
+
+# funciona: nova iteração desde o início
+for linha in dados:
+    ...
+```
+
+Já um iterador obtido explicitamente é de consumo único:
+
+```python
+it = dados.iter_filtrar_por_coluna("status", "5%")
+list(it)   # consome
+list(it)   # agora retorna vazio
+```
+
+Além disso, em `stream` não há acesso aleatório eficiente. Por isso:
+
+- `dados[0]` e `dados[-1]` lançam erro
+- `dados[:n]` é apropriado para prefixos
+- `tail(n)` funciona, mas precisa percorrer todo o arquivo
+- para acesso indexado repetido, reabra em `modo_leitura='eager'`
 
 ---
 
