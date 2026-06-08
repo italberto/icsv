@@ -1380,6 +1380,32 @@ class ICSV(BaseICSV):
 
     # --- Persistência ---
 
+    def como_texto(self) -> str:
+        """Retorna o conteúdo atual em memória serializado como string CSV.
+
+        Diferente do atributo `texto`, que preserva o texto original de
+        carregamento, este método reconstrói o CSV a partir do estado atual
+        do objeto — incluindo todas as modificações feitas via
+        `modificar_valores`, `adicionar_coluna`, `remover_coluna`, etc.
+
+        Returns:
+            String com o conteúdo CSV completo (cabeçalho + linhas de dados),
+            usando o delimitador e a quebra de linha do objeto.
+
+        Exemplo:
+            dados = ICSV('arquivo.csv')
+            dados.modificar_valores('status', lambda s: s.upper())
+            print(dados.como_texto())  # reflete o status em maiúsculas
+        """
+        self._garantir_dados_materializados("como_texto")
+        buffer = io.StringIO()
+        escritor = csv.writer(buffer, delimiter=self.delimitador, lineterminator=self.quebra_linha)
+        if self.possui_cabecalho and self.cabecalho:
+            escritor.writerow(self.cabecalho.campos)
+        for linha in self.linhas:
+            escritor.writerow(linha.campos)
+        return buffer.getvalue()
+
     def salvar(self) -> None:
         """Salva os dados no arquivo de origem (sobrescreve).
 
