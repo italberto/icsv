@@ -1304,7 +1304,21 @@ class ICSV(BaseICSV):
             return self.linhas[indice]
         if isinstance(indice, slice):
             if self.modo_leitura == "stream":
-                return self.head(slice.stop if slice.stop else 0) if slice.stop else self._novo_com_linhas([])
+                if indice.step == 0:
+                    raise ValueError("slice step cannot be zero")
+
+                # Fatias com valores negativos exigem visão completa para semântica Python.
+                if (
+                    (indice.start is not None and indice.start < 0)
+                    or (indice.stop is not None and indice.stop < 0)
+                    or (indice.step is not None and indice.step < 0)
+                ):
+                    return self._novo_com_linhas(list(self)[indice])
+
+                inicio = 0 if indice.start is None else indice.start
+                passo = 1 if indice.step is None else indice.step
+                linhas = list(itertools.islice(self, inicio, indice.stop, passo))
+                return self._novo_com_linhas(linhas)
             return self._novo_com_linhas(self.linhas[indice])
         raise TypeError(f"Índice deve ser int ou slice, não {type(indice).__name__}.")
 

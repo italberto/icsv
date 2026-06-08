@@ -369,7 +369,7 @@ python examples/01_leitura_basica.py
 
 ```bash
 pip install pytest
-pytest test_icsv.py -v
+pytest tests/test_icsv.py -v
 ```
 
 ---
